@@ -62,8 +62,9 @@ def get_exif(filename):
             foundattributes += 1
         if decoded == 'ExposureTime':
             input = str(value)
+            # Exposure values are given as fractions. Convert them to a float.
             result = float(sum(Fraction(s) for s in (re.sub(r',\s', '/', input[1:-1])).split()))
-            listbuild.append(result)
+            listbuild.append(input)
             foundattributes += 1
         if decoded == 'ISOSpeedRatings':
             #print 'ISO: ' + str(value)
@@ -71,6 +72,7 @@ def get_exif(filename):
             foundattributes += 1            
         if decoded == 'FNumber':
             input = str(value)
+            # F numbers are given as fractions. Convert them to a float.
             result = float(sum(Fraction(s) for s in (re.sub(r',\s', '/', input[1:-1])).split()))
             listbuild.append(result)
             foundattributes += 1   
@@ -87,14 +89,17 @@ def scan_dir(path):
             #scan_dir(path)
         if currentfile.endswith('.JPG') or currentfile.endswith('.jpg'):
             #print 'Current file: ' + currentfile
-            get_exif(path + currentfile)
+            get_exif(currentfile)
     print "Done!"
-       
-myfile = open('EXIF_table_export.csv', 'wb')
-wr = csv.writer(myfile)
-#open("myfile.csv","w"), delimiter=',',quoting=csv.QUOTE_ALL
-scan_dir('./')
 
+def main():
+    pathToScan = raw_input("Enter file path: ")
+    assert os.path.exists(pathToScan), "Not a valid directory: " + str(pathToScan)
+    csvOutput = open('EXIF_table_export.csv', 'wb')
+    wr = csv.writer(csvOutput)
+    scan_dir(pathToScan)
+
+main()
 
 
 
