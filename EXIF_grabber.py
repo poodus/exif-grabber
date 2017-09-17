@@ -130,7 +130,6 @@ def main():
             wr.writerow(get_exif(currentfile))
     print "Done! Processed " + str(filesProcessed) + " images."
 
-
 main()
 
 
