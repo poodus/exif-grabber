@@ -18,37 +18,6 @@ from PIL.ExifTags import TAGS
     @author Shane Reetz (initially written in 2013, currently being rewritten)
 '''
 
-
-'''
-    conv_to_time_from_noon()
-    
-    Converts time from the format given in the file to a time relative to noon being "0:0"
-    positive values being after 12, negative values before. This was useful in the initial
-    use case of this project, for statistical analysis of time values in relation to exposure.
-'''
-def conv_to_time_from_noon(input):
-    # Get values from input.
-    hour = int(input[11:13])
-    minute = int(input[14:16])
-    second = int(input[17:19])
-    # Case 1: After Noon
-    if hour >= 12 and hour <=23:
-        hour = hour - 12
-        return str(hour) + ":" + str(minute) + ":" + str(second)
-    # Case 2: Before Noon
-    if hour < 12 and hour >= 0:
-        carry_s = 0
-        carry_m = 0
-        if second!=0:
-            carry_s = 1
-            second = 60-second
-        if minute!=0:
-            carry_m = 1
-            minute = 60-minute-carry_s
-            hour = 12 - hour - carry_m
-        else: hour = 12 - hour
-    return str(hour) + ":" + str(minute) + ":" + str(second)
-
 '''
     get_exif()
     
@@ -67,17 +36,14 @@ def get_exif(filename):
         decoded = TAGS.get(tag, tag)
         # Time
         if decoded == 'DateTimeOriginal':
-            if timeFromNoon:
-                listbuild.append(conv_to_time_from_noon(str(value)))
-            else:
-                listbuild.append(str(value))
+            listbuild.append(str(value))
             foundattributes += 1
         # Flash
-        if decoded == 'Flash':
+        elif decoded == 'Flash':
             listbuild.append(value)
             foundattributes += 1
         # Exposure
-        if decoded == 'ExposureTime':
+        elif decoded == 'ExposureTime':
             input = str(value)
             # Exposure values can be expressed as fractions. Convert them to a float.
             if '/' in input:
@@ -89,19 +55,16 @@ def get_exif(filename):
                 listbuild.append(input)
                 foundattributes += 1
         # ISO
-        if decoded == 'ISOSpeedRatings':
+        elif decoded == 'ISOSpeedRatings':
             listbuild.append(str(value))
             foundattributes += 1
         # F Number
-        if decoded == 'FNumber':
+        elif decoded == 'FNumber':
             input = int(value)
             listbuild.append(result)
             foundattributes += 1   
         foundattributes = 0
     return listbuild
-
-# Flag for using this option.
-timeFromNoon = False
 
 '''
     main()
@@ -123,17 +86,12 @@ def main():
     csvOutput = open('EXIF_table_export.csv', 'wb')
     wr = csv.writer(csvOutput)
     print "Running..."
-    # For every file in the directory, analyze its EXIF data
+    # Get the EXIF data for every JPG in the directory
     for currentfile in glob.glob(os.path.join(pathToScan, '*.*')):
         if currentfile.endswith('.JPG') or currentfile.endswith('.jpg'):
             filesProcessed += 1
             wr.writerow(get_exif(currentfile))
-    print "Done! Processed " + str(filesProcessed) + " images."
-
-main()
-
-
-
-
-
-
+    print "Done. Processed " + str(filesProcessed) + " images."
+    
+if __name__ == "__main__":
+	main()
